@@ -1,12 +1,7 @@
 import pickle
-import tempfile
 import numpy as np
 import tensorflow as tf
 
-MAX_SEQ_LEN = 42
-VOCAB_SIZE = 20000
-EMBEDDING_DIM = 100
-GLOVE_DIR = f'./input/embeddings/glove.6B.{EMBEDDING_DIM}d.txt'
 
 # Reads pickled lists containing cleaned data (stored as lists of tokens)
 def read_data():
@@ -87,11 +82,12 @@ def convert_data(data):
 
 
 
-def glove_dict():
+def glove_dict(EMBEDDING_DIM):
     embedding_dict = {}
 
     # Open the GloVe embedding file
-    file = open(GLOVE_DIR, encoding="utf8")
+    glove_dir = './input/embeddings/glove.6B.'+ str(EMBEDDING_DIM)+'d.txt'
+    file = open(glove_dir, encoding="utf8")
 
     for line in file:
         # Spilt the word and its embedding vector
@@ -105,19 +101,19 @@ def glove_dict():
     file.close()
 
     # Store the dictionary as a pickle file to reduce thw overhead of loading
-    with open('./input/embeddings/glove_dict.pickle', "wb") as file:
+    with open(f'./input/embeddings/glove_dict{EMBEDDING_DIM}d.pickle', "wb") as file:
         pickle.dump(embedding_dict, file)
 
     return embedding_dict
 
 
-def embedding_matrix(corpus):
+def embedding_matrix(corpus, EMBEDDING_DIM, VOCAB_SIZE):
     # Try to load GloVe embedding dictionary if it exists. If not, create one
     try:
         with open(f'./input/embeddings/glove_dict{EMBEDDING_DIM}d.pickle', "rb") as file:
             glove_embedding = pickle.load(file)
     except:
-        glove_embedding = glove_dict()
+        glove_embedding = glove_dict(EMBEDDING_DIM)
 
     # Initialize and fit Keras tokenizer to convert words to integers
     tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=VOCAB_SIZE)
@@ -144,14 +140,14 @@ def embedding_matrix(corpus):
     return embed_matrix, tokenizer
 
 
-def preprocess_traindata(train_data):
+def preprocess_traindata(train_data, MAX_SEQ_LEN, EMBEDDING_DIM, VOCAB_SIZE):
     # print("Train Data information\n")
 
     # Convert data to required format
     data, corpus = convert_data(train_data)
 
     # Obtain the embedding weight matrix and the tokenizer
-    embed_matrix, tokenizer = embedding_matrix(corpus)
+    embed_matrix, tokenizer = embedding_matrix(corpus, EMBEDDING_DIM, VOCAB_SIZE)
 
     # Process the data to integer sequences and labels to one-hot labels
     sequence = lambda sentence: tf.keras.preprocessing.sequence.pad_sequences(tokenizer.texts_to_sequences(sentence), maxlen=MAX_SEQ_LEN)
@@ -162,7 +158,7 @@ def preprocess_traindata(train_data):
     return training_data, embed_matrix
 
 # Function to preprocess test data
-def preprocess_testdata(test_data):
+def preprocess_testdata(test_data, MAX_SEQ_LEN):
     # print("Test Data information\n")
 
     # Convert data to required format
