@@ -25,3 +25,10 @@ class Attention(tf.keras.layers.Layer):
             return a, output
         
         return a, tf.keras.backend.sum(output, axis=1)
+
+    def get_config(self):
+        config = super().get_config().copy()
+        config.update({
+            'return_sequences': self.return_sequences 
+        })
+        return config
