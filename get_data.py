@@ -131,11 +131,13 @@ def embedding_matrix(corpus, EMBEDDING_DIM, VOCAB_SIZE):
 
     for word, ind in word_index.items():
         # Get the embedding vector from GloVe dictionary, if available
-        # Words not in the Glove would have the embedding matrix vector as full zeroes
+        # Words not in the Glove would have the embedding matrix vector as random values uniformly generated between -0.05 and 0.05
         embedding_vector = glove_embedding.get(word)
 
         if embedding_vector is not None:
             embed_matrix[ind] = embedding_vector
+        else:
+            embed_matrix[ind] = np.array([np.random.uniform(-0.05, 0.05) for _ in range(EMBEDDING_DIM)])
 
     return embed_matrix, tokenizer
 
