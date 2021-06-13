@@ -86,14 +86,14 @@ def glove_dict(EMBEDDING_DIM):
     embedding_dict = {}
 
     # Open the GloVe embedding file
-    glove_dir = './input/embeddings/glove.6B.'+ str(EMBEDDING_DIM)+'d.txt'
+    glove_dir = './input/embeddings/glove.840B.'+ str(EMBEDDING_DIM)+'d.txt'
     file = open(glove_dir, encoding="utf8")
 
     for line in file:
         # Spilt the word and its embedding vector
-        line_list = line.split()
+        line_list = line.split(' ')
         word = line_list[0]
-        embeddings = np.asarray(line_list[1:], dtype=float)
+        embeddings = np.asarray(line_list[1:], dtype='float32')
 
         # Store the word and its embedding vector in a dictionary
         embedding_dict[word] = embeddings
@@ -101,7 +101,7 @@ def glove_dict(EMBEDDING_DIM):
     file.close()
 
     # Store the dictionary as a pickle file to reduce thw overhead of loading
-    with open(f'./input/embeddings/glove_dict{EMBEDDING_DIM}d.pickle', "wb") as file:
+    with open(f'./input/embeddings/glove_dict_840_{EMBEDDING_DIM}d.pickle', "wb") as file:
         pickle.dump(embedding_dict, file)
 
     return embedding_dict
@@ -110,7 +110,7 @@ def glove_dict(EMBEDDING_DIM):
 def embedding_matrix(corpus, EMBEDDING_DIM, VOCAB_SIZE):
     # Try to load GloVe embedding dictionary if it exists. If not, create one
     try:
-        with open(f'./input/embeddings/glove_dict{EMBEDDING_DIM}d.pickle', "rb") as file:
+        with open(f'./input/embeddings/glove_dict_840_{EMBEDDING_DIM}d.pickle', "rb") as file:
             glove_embedding = pickle.load(file)
     except:
         glove_embedding = glove_dict(EMBEDDING_DIM)

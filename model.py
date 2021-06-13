@@ -138,16 +138,16 @@ def create_Rochtaschel_model(premise, hypothesis,
 
     translation = tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(300, activation='relu', kernel_regularizer=lam))
 
-    LSTM_p = tf.keras.layers.LSTM(100, 
+    lstm_layer_1 = tf.keras.layers.LSTM(100, 
                                 kernel_regularizer=lam, 
                                 recurrent_regularizer=lam, 
                                 return_sequences=True,
                                 return_state=True,
                                 time_major=False)
 
-    LSTM_h = tf.keras.layers.LSTM(100,
+    lstm_layer_2 = tf.keras.layers.LSTM(100, 
                                 kernel_regularizer=lam, 
-                                recurrent_regularizer=lam,
+                                recurrent_regularizer=lam, 
                                 return_sequences=True,
                                 time_major=False)
 
@@ -158,23 +158,23 @@ def create_Rochtaschel_model(premise, hypothesis,
     hypothesis = translation(hypothesis)
 
     if two_way:
-        premise_1, forward_h, forward_c, = LSTM_p(premise)
+        premise_1, forward_h, forward_c, = lstm_layer_1(premise)
         init_states = [forward_h, forward_c]
-        hypothesis_1 = LSTM_h(hypothesis, initial_state=init_states)
-        train_input_1 = RochtaschelAttention()(tf.keras.layers.concatenate([premise_1, hypothesis_1], axis=1))
-        hypothesis_2, forward_h, forward_c, = LSTM_p(hypothesis)
+        hypothesis_1 = lstm_layer_2(hypothesis, initial_state=init_states)
+        train_input_1 = RochtaschelAttention(regularizer=lam)(tf.keras.layers.concatenate([premise_1, hypothesis_1], axis=1))
+        hypothesis_2, forward_h, forward_c, = lstm_layer_1(hypothesis)
         init_states = [forward_h, forward_c]
-        premise_2 = LSTM_h(premise, initial_state=init_states)
-        train_input_2 = RochtaschelAttention()(tf.keras.layers.concatenate([hypothesis_2, premise_2], axis=1))
+        premise_2 = lstm_layer_2(premise, initial_state=init_states)
+        train_input_2 = RochtaschelAttention(regularizer=lam)(tf.keras.layers.concatenate([hypothesis_2, premise_2], axis=1))
         train_input = tf.keras.layers.concatenate([train_input_1, train_input_2])
     else:
-        premise, forward_h, forward_c, = LSTM_p(premise)
+        premise, forward_h, forward_c, = lstm_layer_1(premise)
         init_states = [forward_h, forward_c]
-        hypothesis = LSTM_h(hypothesis, initial_state=init_states)
-        train_input = RochtaschelAttention()(tf.keras.layers.concatenate([premise, hypothesis], axis=1))
+        hypothesis = lstm_layer_2(hypothesis, initial_state=init_states)
+        train_input = RochtaschelAttention(regularizer=lam)(tf.keras.layers.concatenate([premise, hypothesis], axis=1))
 
 
-    train_input = tf.keras.layers.Dropout(0.1)(train_input)
+    train_input = tf.keras.layers.Dropout(0.25)(train_input)
 
     for i in range(3):
         train_input = tf.keras.layers.Dense(100, kernel_regularizer=lam)(train_input)
@@ -217,8 +217,8 @@ def create_Inner_Attention_model(premise, hypothesis,
     premise = BiLSTM(premise)
     hypothesis = BiLSTM(hypothesis)
 
-    premise = InnerAttention()(premise)
-    hypothesis = InnerAttention()(hypothesis)
+    premise = InnerAttention(regularizer=lam)(premise)
+    hypothesis = InnerAttention(regularizer=lam)(hypothesis)
 
     if baseline:
         train_input = tf.keras.layers.concatenate([premise, hypothesis])
@@ -228,7 +228,7 @@ def create_Inner_Attention_model(premise, hypothesis,
         train_input = tf.keras.layers.concatenate([premise, hypothesis, dot_product, difference])
 
 
-    train_input = tf.keras.layers.Dropout(0.1)(train_input)
+    train_input = tf.keras.layers.Dropout(0.25)(train_input)
 
     for i in range(3):
         train_input = tf.keras.layers.Dense(100, kernel_regularizer=lam)(train_input)
