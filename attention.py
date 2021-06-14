@@ -1,11 +1,11 @@
 import tensorflow as tf
 
-class Attention(tf.keras.layers.Layer):
+class CustomAttention(tf.keras.layers.Layer):
 
     def __init__(self, return_sequences=True):
         
         self.return_sequences = return_sequences
-        super(Attention,self).__init__()
+        super(CustomAttention,self).__init__()
 
     def build(self, input_shape):
         
@@ -14,7 +14,7 @@ class Attention(tf.keras.layers.Layer):
         self.b=self.add_weight(name="att_bias", shape=(input_shape[1],1),
                                initializer="zeros")
         
-        super(Attention,self).build(input_shape)
+        super(CustomAttention,self).build(input_shape)
 
     def call(self, x):
         
@@ -37,9 +37,10 @@ class Attention(tf.keras.layers.Layer):
 
 class RochtaschelAttention(tf.keras.layers.Layer):
 
-    def __init__(self, regularizer):
+    def __init__(self, regularizer, name=None, **kwargs):
+        super(InnerAttention, self).__init__(name=name)
         self.kernel_regularizer = regularizer
-        super(RochtaschelAttention, self).__init__()
+        super(RochtaschelAttention, self).__init__(**kwargs)
 
     def build(self, input_shape):
 
@@ -76,6 +77,7 @@ class RochtaschelAttention(tf.keras.layers.Layer):
         })
         return config
 
+
 class InnerAttention(tf.keras.layers.Layer):
 
     def __init__(self, regularizer, name=None, **kwargs):
@@ -103,14 +105,6 @@ class InnerAttention(tf.keras.layers.Layer):
         alpha = tf.keras.activations.softmax(tf.einsum('ij,lkj->lik', tf.transpose(self.w), M))
         output = tf.einsum('ijk,ilj->ik', y, alpha)
         return output
-
-    def _get_attention_weights(self, y):
-        R_avg = tf.keras.layers.GlobalAveragePooling1D()(y)
-        first_term = tf.einsum('ijk,kk->ijk', y, self.W_y)
-        second_term = tf.keras.layers.RepeatVector(y.shape[1])(tf.einsum('ik,kk->ik', R_avg, self.W_h))
-        M = tf.keras.activations.tanh(first_term + second_term)
-        alpha = tf.keras.activations.softmax(tf.einsum('ij,lkj->lik', tf.transpose(self.w), M))
-        return alpha
 
     def get_config(self):
         config = super().get_config().copy()

@@ -37,8 +37,8 @@ def create_LSTM_model(premise, hypothesis,
     hypothesis = tf.keras.layers.BatchNormalization()(hypothesis)
 
     if attention:
-        _, premise = Attention(return_sequences=False)(premise)
-        _, hypothesis = Attention(return_sequences=False)(hypothesis)
+        _, premise = CustomAttention(return_sequences=False)(premise)
+        _, hypothesis = CustomAttention(return_sequences=False)(hypothesis)
 
     if baseline:
         train_input = tf.keras.layers.concatenate([premise, hypothesis])
@@ -99,8 +99,8 @@ def create_GRU_model(premise, hypothesis,
     hypothesis = tf.keras.layers.BatchNormalization()(hypothesis)
 
     if attention:
-        _, premise = Attention(return_sequences=False)(premise)
-        _, hypothesis = Attention(return_sequences=False)(hypothesis)
+        _, premise = CustomAttention(return_sequences=False)(premise)
+        _, hypothesis = CustomAttention(return_sequences=False)(hypothesis)
 
     if baseline:
         train_input = tf.keras.layers.concatenate([premise, hypothesis])
@@ -204,7 +204,7 @@ def create_Inner_Attention_model(premise, hypothesis,
     translation = tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(300, activation='relu', kernel_regularizer=lam))
 
     BiLSTM = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(100, 
-                                            kernel_regularizer=lam, 
+                                            kernel_regularizer=lam,
                                             recurrent_regularizer=lam, 
                                             return_sequences=True))
 
