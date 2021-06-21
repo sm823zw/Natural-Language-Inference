@@ -28,6 +28,7 @@ Hypothesis –Two men are smiling and laughing at the cats playing on the floor.
 
 Output – Neutral
 
-In this project, several Bi-LSTM and Bi-GRU models were created and trained for the task of NLI. We implemented the baseline model introduced by [Bownman et. al.](https://nlp.stanford.edu/pubs/snli_paper.pdf) who published the dataset. To improve model performances, several attention mechanisms such as [1-way attention](https://arxiv.org/pdf/1509.06664.pdf), [2-way attention](https://arxiv.org/pdf/1509.06664.pdf), and [Inner Attention](https://arxiv.org/pdf/1605.09090.pdf) have been implemented. Several [sentence matching techniques](https://arxiv.org/pdf/1512.08422.pdf) have been applied to enhance the model performance.
+In this project, several Bi-LSTM and Bi-GRU models were created and trained for the task of NLI. I have made use of 300-d [GloVe embeddings](https://nlp.stanford.edu/pubs/glove.pdf) as word embeddings.
+I implemented the baseline model introduced by [Bownman et. al.](https://nlp.stanford.edu/pubs/snli_paper.pdf) who published the dataset. To improve model performances, several attention mechanisms such as [1-way attention](https://arxiv.org/pdf/1509.06664.pdf), [2-way attention](https://arxiv.org/pdf/1509.06664.pdf), and [Inner Attention](https://arxiv.org/pdf/1605.09090.pdf) have been implemented. Several [sentence matching techniques](https://arxiv.org/pdf/1512.08422.pdf) have been applied to enhance the model performance.
 
 The project has been implemented in Python (3.8.5) programming language. Tensorflow (2.4) framework was used for building and training the models. spacy, contractions, word2number, and BeatifulSoup libraries were used for textual data pre-processing. Seaborn library was used to plot the confusion matrix.
