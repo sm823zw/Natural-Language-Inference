@@ -81,7 +81,6 @@ def convert_data(data):
     return data_converted, corpus
 
 
-
 def glove_dict(EMBEDDING_DIM):
     embedding_dict = {}
 

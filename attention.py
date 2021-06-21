@@ -2,25 +2,26 @@ import tensorflow as tf
 
 class CustomAttention(tf.keras.layers.Layer):
 
-    def __init__(self, return_sequences=True):
-        
+    def __init__(self, regularizer, return_sequences=True, name=None, **kwargs):
+        super(CustomAttention, self).__init__(name=name)
+        self.kernel_regularizer = regularizer
         self.return_sequences = return_sequences
-        super(CustomAttention,self).__init__()
+        super(CustomAttention, self).__init__(**kwargs)
 
     def build(self, input_shape):
         
         self.W=self.add_weight(name="att_weight", shape=(input_shape[-1],1),
-                               initializer="normal")
+                               initializer="glorot_uniform", regularizer=self.kernel_regularizer, trainable=True)
         self.b=self.add_weight(name="att_bias", shape=(input_shape[1],1),
-                               initializer="zeros")
+                               initializer="glorot_uniform", regularizer=self.kernel_regularizer, trainable=True)
         
         super(CustomAttention,self).build(input_shape)
 
     def call(self, x):
         
-        e = tf.keras.activations.tanh(tf.keras.backend.dot(x,self.W)+self.b)
+        e = tf.keras.activations.tanh(tf.keras.backend.dot(x, self.W) + self.b)
         a = tf.keras.activations.softmax(e, axis=1)
-        output = x*a
+        output = x * a
         
         if self.return_sequences:
             return a, output
@@ -30,6 +31,7 @@ class CustomAttention(tf.keras.layers.Layer):
     def get_config(self):
         config = super().get_config().copy()
         config.update({
+            'regu;arizer': self.kernel_regularizer,
             'return_sequences': self.return_sequences 
         })
         return config
@@ -38,7 +40,7 @@ class CustomAttention(tf.keras.layers.Layer):
 class RochtaschelAttention(tf.keras.layers.Layer):
 
     def __init__(self, regularizer, name=None, **kwargs):
-        super(InnerAttention, self).__init__(name=name)
+        super(RochtaschelAttention, self).__init__(name=name)
         self.kernel_regularizer = regularizer
         super(RochtaschelAttention, self).__init__(**kwargs)
 

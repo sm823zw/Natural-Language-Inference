@@ -1,3 +1,4 @@
+import re
 import tensorflow as tf
 from attention import *
 
@@ -26,15 +27,15 @@ def create_LSTM_model(premise, hypothesis,
                                                 kernel_regularizer=lam, 
                                                 recurrent_regularizer=lam, 
                                                 return_sequences=False))
-       
+
     premise = embedding(premise)
     hypothesis = embedding(hypothesis)
 
+    premise = translation(premise)
+    hypothesis = translation(hypothesis)
+
     premise = BiLSTM(premise)
     hypothesis = BiLSTM(hypothesis)
-
-    premise = tf.keras.layers.BatchNormalization()(premise)
-    hypothesis = tf.keras.layers.BatchNormalization()(hypothesis)
 
     if attention:
         _, premise = CustomAttention(return_sequences=False)(premise)
@@ -228,13 +229,69 @@ def create_Inner_Attention_model(premise, hypothesis,
         train_input = tf.keras.layers.concatenate([premise, hypothesis, dot_product, difference])
 
 
-    train_input = tf.keras.layers.Dropout(0.25)(train_input)
+    train_input = tf.keras.layers.Dropout(0.2)(train_input)
 
     for i in range(3):
         train_input = tf.keras.layers.Dense(100, kernel_regularizer=lam)(train_input)
         train_input = tf.keras.layers.BatchNormalization()(train_input)
         train_input = tf.keras.layers.ReLU()(train_input)
-        train_input = tf.keras.layers.Dropout(0.1)(train_input)
+        train_input = tf.keras.layers.Dropout(0.2)(train_input)
+
+
+    prediction = tf.keras.layers.Dense(3, activation='softmax')(train_input)
+
+    return prediction
+
+def create_Novel_model(premise, hypothesis, 
+                            embed_matrix, l2, 
+                            EMBEDDING_DIM, MAX_SEQ_LEN, 
+                            baseline=True):
+
+    lam = tf.keras.regularizers.l2(l2=l2)
+    
+    embedding =  tf.keras.layers.Embedding(embed_matrix.shape[0], 
+                                            output_dim=EMBEDDING_DIM, 
+                                            weights=[embed_matrix], 
+                                            input_length=MAX_SEQ_LEN, 
+                                            trainable=False)
+
+    translation = tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(300, activation='relu', kernel_regularizer=lam))
+
+    BiLSTM = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(100, 
+                                            kernel_regularizer=lam,
+                                            recurrent_regularizer=lam, 
+                                            return_sequences=True))
+
+    premise = embedding(premise)
+    hypothesis = embedding(hypothesis)
+
+    premise = translation(premise)
+    hypothesis = translation(hypothesis)
+
+    premise = BiLSTM(premise)
+    hypothesis = BiLSTM(hypothesis)
+
+    premise_1 = InnerAttention(regularizer=lam)(premise)
+    hypothesis_1 = InnerAttention(regularizer=lam)(hypothesis)
+
+    _, premise_2 = CustomAttention(return_sequences=False, regularizer=lam)(premise)
+    _, hypothesis_2 = CustomAttention(return_sequences=False, regularizer=lam)(hypothesis)
+
+    if baseline:
+        train_input = tf.keras.layers.concatenate([premise_1, hypothesis_1])
+    else:
+        dot_product = tf.keras.layers.Multiply()([premise_1, hypothesis_1])
+        difference = tf.keras.layers.Subtract()([premise_1, hypothesis_1])
+        train_input = tf.keras.layers.concatenate([premise_1, hypothesis_1, dot_product, difference, premise_2, hypothesis_2])
+
+
+    train_input = tf.keras.layers.Dropout(0.2)(train_input)
+
+    for i in range(3):
+        train_input = tf.keras.layers.Dense(100, kernel_regularizer=lam)(train_input)
+        train_input = tf.keras.layers.BatchNormalization()(train_input)
+        train_input = tf.keras.layers.ReLU()(train_input)
+        train_input = tf.keras.layers.Dropout(0.2)(train_input)
 
 
     prediction = tf.keras.layers.Dense(3, activation='softmax')(train_input)
