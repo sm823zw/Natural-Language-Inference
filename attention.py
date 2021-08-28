@@ -31,7 +31,7 @@ class CustomAttention(tf.keras.layers.Layer):
     def get_config(self):
         config = super().get_config().copy()
         config.update({
-            'regu;arizer': self.kernel_regularizer,
+            'regularizer': self.kernel_regularizer,
             'return_sequences': self.return_sequences 
         })
         return config
