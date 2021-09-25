@@ -39,9 +39,4 @@ The following are the performance metrics -
 
 ![image](https://user-images.githubusercontent.com/49569284/132258173-bbf204f2-8383-4380-823f-06b0056c6e50.png)
 
-
-The following is the model architecture -
-
-![](https://github.com/sm823zw/Natural-Language-Inference/blob/main/model_1.png)
-
 The project has been implemented in Python (3.8.5) programming language. Tensorflow (2.4) framework was used for building and training the models. spacy, contractions, word2number, and BeatifulSoup libraries were used for textual data pre-processing. Seaborn library was used to plot the confusion matrix.
